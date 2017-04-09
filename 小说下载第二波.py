@@ -72,7 +72,6 @@ def gettext(url):
     text=text.replace('\t',' ')
     text=text.replace('<script>chaptererror();</script>','')
     text=text.replace('</div>','')
-    print texttitle
     
     return texttitle,text
 
@@ -81,10 +80,9 @@ def gettext(url):
 def writetext(Text):
     '''写入文本'''
     title,text=Text[0],Text[1]
-    #with open('%s/%s.txt'%(downdir,tname),'a+') as f:
-    #f=open('%s/%s.txt'%(downdir,tname),'a+')
     f4.write('%s\n\n%s\n\n\n'%(title,text))
     f4.flush()
+    print title
 
 
 
