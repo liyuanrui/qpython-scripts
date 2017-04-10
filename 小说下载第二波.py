@@ -14,6 +14,8 @@ import urllib
 import urllib2
 import re
 import os
+import traceback
+
 
 
 downdir='/sdcard'
@@ -53,26 +55,28 @@ def getchapter(url):
     read=body.read()
     body.close()
     chapterList=re.findall('<dd><a style="" href="(.*?)">(.*?)</a></dd>',read)
-    chapterList=[i[0] for i in chapterList if i[1] not in rload]
+    chapterList=[i for i in chapterList if i[1] not in rload]
     return chapterList
 
 
 
-def gettext(url):
+def gettext(chapterList):
     '''查找正文'''
+    url,texttitle=chapterList
     url=hosturl+url
     body=urllib2.urlopen(url)
     read=body.read()
     body.close()
-    texttitle=re.findall('<h1>(.*?)</h1>',read)[0]
-    text=re.findall('<div id="content">(.*?)<div class="bottem2">',read,re.S)[0]
-    text=text.replace('<br/>','\n')
-    text=text.replace('\r\n','\n')
-    text=text.replace('&nbsp;',' ')
-    text=text.replace('\t',' ')
-    text=text.replace('<script>chaptererror();</script>','')
-    text=text.replace('</div>','')
-    
+    try:
+        text=re.findall('<div id="content">(.*?)<div class="bottem2">',read,re.S)[0]
+        text=text.replace('<br/>','\n')
+        text=text.replace('\r\n','\n')
+        text=text.replace('&nbsp;',' ')
+        text=text.replace('\t',' ')
+        text=text.replace('<script>chaptererror();</script>','')
+        text=text.replace('</div>','')
+    except Exception as e:
+        text='本章暂缺'*100
     return texttitle,text
 
 
@@ -82,7 +86,9 @@ def writetext(Text):
     title,text=Text[0],Text[1]
     f4.write('%s\n\n%s\n\n\n'%(title,text))
     f4.flush()
-    print title
+    msg=''
+    if '本章暂缺' in text:msg='本章暂缺'
+    print title,msg
 
 
 
@@ -104,7 +110,8 @@ if __name__ == '__main__':
         for i in chapterList:
             writetext(gettext(i))
     except Exception,e:
-        print '\n发生异常:\n%s\n已保存进度，请重新运行'%e        
+        print '\n发生异常:\n%s\n已保存进度，请重新运行'%e
+        #print traceback.format_exc()    
     finally:
         f4.close()
         exit()
